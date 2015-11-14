@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div id="existingNode">
+</div>
+
+<script>
+var newp=document.createElement("p");
+var newtext=document.createTextNode("This paragraph is a dynamically created and appended to existing node.");
+newp.appendChild(newtext);
+
+var node=document.getElementById("existingNode");
+node.appendChild(newp);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<link type="text/css" rel="stylesheet" href="evexample.css">
+
+<div class="A" onclick="changeColor(this)">A  
+    <div class="B" onclick="changeColor(this)">B
+        <div class="C" onclick="changeColor(this)">C
+        </div> 
+    </div>
+</div>
+
+<script>
+function changeColor(element) {
+    element.style.backgroundColor='orange'
+    alert(element.className)
+    element.style.backgroundColor = ''
+}
+</script>
+
+</body>
+</html>

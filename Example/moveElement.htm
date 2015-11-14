@@ -1,0 +1,112 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<link type="text/css" rel="stylesheet" href="moveshape.css">
+
+<div class="board" id="board">
+    <div class="shape" id="shape">Drag to move
+    </div> 
+</div>
+
+<script>
+
+var board = document.getElementById("board");
+var shape = document.getElementById("shape");
+// set the initial position of the child element
+shape.x = 20; 
+shape.y = 20; 
+board.addEventListener("mousedown", mousedown, false)
+board.addEventListener("mouseup", mouseuporout, false)
+board.addEventListener("mousemove", mousemove, false)
+board.addEventListener("mouseout", mouseuporout, false)
+
+var started = false;
+var startx = 0;
+var starty = 0;
+var currentShape = null;
+var nonIEbrowser = msieversion() == 0;
+
+function findCoordinates(event)
+{
+  event.preventDefault(); // prevent the default action by the browser
+  // find the coordinates of the event relative to the board element
+  if (event.layerX || event.layerX == 0) { // Firefox
+    event._x = event.layerX;
+    event._y = event.layerY;
+  } else if (event.offsetX || event.offsetX == 0) { // Opera
+    event._x = event.offsetX;
+    event._y = event.offsetY;
+  }
+  var target = event.target || event.srcElement;  
+  // for non-IE browser, the coordinates needed to be adjusted by the offset of the target
+  if (nonIEbrowser) { 
+    if (target != board) {
+        event._x += target.offsetLeft;
+        event._y += target.offsetTop;
+    }
+  }
+  console.log(event._x, event._y);
+}
+
+// This function returns Internet Explorer's major version number,
+// or 0 for others. It works by finding the "MSIE " string and
+// extracting the version number following the space, up to the decimal
+// point, ignoring the minor version number
+function msieversion()
+{
+   var ua = window.navigator.userAgent
+   var msie = ua.indexOf ( "MSIE " )
+
+   if ( msie > 0 )      // If Internet Explorer, return version number
+      return parseInt (ua.substring (msie+5, ua.indexOf (".", msie )))
+   else                 // If another browser, return 0
+      return 0
+
+}
+   
+function mousedown(event)
+{
+    findCoordinates(event);
+    var target = event.target || event.srcElement;     
+    if (target.className == "shape") // a shape is selected
+    {
+       started = true;
+       currentShape = target;
+       startx = event._x;
+       starty = event._y;
+    }    
+}
+
+function mousemove(event) 
+{
+    findCoordinates(event);
+    if (started) {
+        currentShape.style.left = currentShape.x + (event._x - startx) + "px";
+        currentShape.style.top = currentShape.y + (event._y - starty) + "px";
+        if (event._x > 200 || event._y > 200 || event._x < 0 || event._y < 0) // the pointer is moved outside the board
+        { // finish moving
+            currentShape.x += (event._x - startx);
+            currentShape.y += (event._y - starty);
+            started = false;
+        }
+    }
+}
+
+function mouseuporout(event) {
+    findCoordinates(event);
+    if (started) { // finish moving
+        currentShape.style.left = currentShape.x + (event._x - startx) + "px";
+        currentShape.style.top = currentShape.y + (event._y - starty) + "px";
+        currentShape.x += (event._x - startx);
+        currentShape.y += (event._y - starty);
+        started = false;
+    }  
+}
+
+
+
+
+</script>
+
+</body>
+</html>

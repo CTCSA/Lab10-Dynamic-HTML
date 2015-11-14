@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+Enter a country name: <input type="text" id="cn" onchange="change()">
+<script>
+// called when the user leaves the input field
+function change() { 
+  var e=document.getElementById("cn");
+  e.value=e.value.toUpperCase();
+}
+</script>
+</body>
+</html>

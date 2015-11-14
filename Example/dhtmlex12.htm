@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<link type="text/css" rel="stylesheet" href="evexample.css">
+
+<div class="A" onclick="changeColor(this, event)">A  
+    <div class="B" onclick="changeColor(this, event)">B
+        <div class="C" onclick="changeColor(this, event)">C
+        </div> 
+    </div>
+</div>
+
+<script>
+function changeColor(element, event) {
+    element.style.backgroundColor='orange';
+    alert(element.className);
+    element.style.backgroundColor = '';
+    if (event.stopPropagation) {
+        // W3C standard complaint browser
+        event.stopPropagation();
+    } else {
+        // IE browser
+        event.cancelBubble = true;
+    }    
+}
+</script>
+
+</body>
+</html>

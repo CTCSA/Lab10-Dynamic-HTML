@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div onmouseover="mi(this)" onmouseout="mo(this)" style="border-style:solid;border-width:1px;background:red;width:100px;height:50px;">Mouse out</div>
+
+<script>
+function mi(element)
+{
+element.innerHTML="Mouse in";
+element.style.background="green";
+}
+
+function mo(element)
+{
+element.innerHTML="Mouse out"
+element.style.background="red";
+}
+</script>
+
+</body>
+</html> 

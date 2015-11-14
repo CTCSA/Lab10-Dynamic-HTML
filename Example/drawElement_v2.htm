@@ -1,0 +1,295 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<link type="text/css" rel="stylesheet" href="drawshape.css">
+<button type="button" onclick="setSelectMode()">select shape</button>
+<button type="button" name="div" onclick="setCreateMode(this)">create DIV</button>
+<button type="button" name="textarea" onclick="setCreateMode(this)">create textarea</button>
+<button type="button" name="button" onclick="setCreateMode(this)">create button</button>
+
+<div style="position:relative;width:800px;height:600px;">
+    <div class="board" id="board" style="background-color:blue;">
+    </div>
+    <div class="board" id="glassPane" style="visibility:hidden;">
+    </div>    
+</div>
+
+
+<script>
+
+console.log(this);
+function setSelectMode() {
+    hideGlassPane();
+    curControl = mca;
+}
+
+function setCreateMode(button) {
+    console.log(button.name);
+    showGlassPane();
+    createControl.type = button.name;
+    curControl = cca;
+    console.log("setCreateMode");
+}
+
+// This function returns Internet Explorer's major version number,
+// or 0 for others. It works by finding the "MSIE " string and
+// extracting the version number following the space, up to the decimal
+// point, ignoring the minor version number
+function msieversion()
+{
+   var ua = window.navigator.userAgent
+   var msie = ua.indexOf ( "MSIE " )
+
+   if ( msie > 0 )      // If Internet Explorer, return version number
+      return parseInt (ua.substring (msie+5, ua.indexOf (".", msie )))
+   else                 // If another browser, return 0
+      return 0
+
+}
+
+var nonIEbrowser = msieversion() == 0;
+
+var glassPane = document.getElementById("glassPane");
+var board = document.getElementById("board");
+board.width = 800;
+board.height = 600;
+board.addEventListener("mousedown", mousedown, false);
+//board.addEventListener("mouseup", mouseup, false)
+//board.addEventListener("mousemove", mousemove, false)
+//board.addEventListener("mouseout", mouseout, false)
+glassPane.addEventListener("mousedown", mousedown, false);
+glassPane.addEventListener("mouseup", mouseup, false);
+glassPane.addEventListener("mousemove", mousemove, false);
+glassPane.addEventListener("mouseout", mouseout, false);
+
+
+// create the move controller and its adapter
+var moveControl = new MoveControl();
+var mca = new MCAdapter(moveControl);
+// create the create controller and its adapter;
+var createControl = new CreateControl();
+var cca = new CCAdapter(createControl);
+
+// current control object
+var curControl = mca;
+
+function findCoordinates(event)
+{
+  event.preventDefault(); // prevent the default action by the browser
+  // find the coordinates of the event relative to the target element
+  if (event.layerX || event.layerX == 0) { // Firefox
+    event._x = event.layerX;
+    event._y = event.layerY;
+  } else if (event.offsetX || event.offsetX == 0) { // Opera
+    event._x = event.offsetX;
+    event._y = event.offsetY;
+  }
+
+  var target = event.target || event.srcElement;  
+  // for non-IE browser, the coordinates needed to be adjusted by the offset of the target
+  if (nonIEbrowser) { 
+    if (target.className == 'shape') {
+        event._x += target.offsetLeft;
+        event._y += target.offsetTop;
+    }
+  }  
+}
+
+function mousedown(event)
+{
+    findCoordinates(event);
+    curControl.mousedown(event);
+}
+
+
+function mousemove(event) 
+{
+    findCoordinates(event);
+    curControl.mousemove(event);
+}
+
+function mouseup(event) {
+    findCoordinates(event);
+    curControl.mouseup(event); 
+}
+
+function mouseout(event) {
+    findCoordinates(event);
+    curControl.mouseout(event); 
+}
+
+function showGlassPane() {
+  glassPane.style.visibility="visible";  
+}
+
+function hideGlassPane() {
+  glassPane.style.visibility="hidden";
+}
+
+function MCAdapter(mcontrol)
+{
+    this.control = mcontrol;
+}
+
+
+MCAdapter.prototype.mousedown = function(event) 
+{
+    var target = event.target || event.srcElement;     
+    if (target.className == "shape") {
+      // a shape is selected
+      this.control.start(target,event._x,event._y);
+      // make the glass pane visibility for dragging
+      showGlassPane();
+    }
+}
+
+MCAdapter.prototype.mousemove = function(event) 
+{
+    this.control.drag(event._x, event._y);
+}
+
+MCAdapter.prototype.mouseup = function(event) 
+{
+    this.control.end(event._x, event._y);
+}
+
+MCAdapter.prototype.mouseout = function(event) 
+{
+    console.log("end");
+    this.control.end(event._x, event._y);
+}
+
+
+function MoveControl()
+{
+  this.started = false;
+  this.startx = 0;
+  this.starty = 0;
+  this.currentShape = null;
+}
+
+MoveControl.prototype.start = function(shape,x,y){
+  this.startx = x;
+  this.starty = y;
+  this.currentShape = shape;
+  this.started = true;
+  console.log("MoveControl.start:", x, y, shape);
+}
+
+MoveControl.prototype.drag = function(x,y){
+    if (this.started) {
+        this.currentShape.style.left = this.currentShape.x + (x - this.startx) + "px";
+        this.currentShape.style.top = this.currentShape.y + (y - this.starty) + "px";
+        if (x > board.x || y > board.y || x < 0 || y < 0) // the pointer is moved outside the board
+        { // finish moving
+            this.currentShape.x += (x - this.startx);
+            this.currentShape.y += (y - this.starty);
+            this.started = false;
+            hideGlassPane();
+        }
+    }
+}
+
+MoveControl.prototype.end = function(x,y){
+    if (this.started) { // finish moving
+        this.currentShape.style.left = this.currentShape.x + (x - this.startx) + "px";
+        this.currentShape.style.top = this.currentShape.y + (y - this.starty) + "px";
+        this.currentShape.x += (x - this.startx);
+        this.currentShape.y += (y - this.starty);
+        this.started = false;
+        hideGlassPane();        
+    } 
+}
+
+function CCAdapter(ccontrol)
+{
+    this.control = ccontrol;
+}
+
+CCAdapter.prototype.mousedown = function(event) 
+{
+    console.log("CCAdapter: mousedown")
+    this.control.start(event._x,event._y);
+}
+
+CCAdapter.prototype.mousemove = function(event) 
+{
+    this.control.drag(event._x, event._y);
+}
+
+CCAdapter.prototype.mouseup = function(event) 
+{
+    this.control.end(event._x, event._y);
+}
+
+CCAdapter.prototype.mouseout = function(event) 
+{
+    console.log("end");
+    this.control.end(event._x, event._y);
+}
+
+function CreateControl()
+{
+  this.started = false;
+  this.startx = 0;
+  this.starty = 0;
+  this.shape = null;
+  this.type = 'div';
+}
+
+CreateControl.prototype.start = function(x,y){
+  console.log("create: start", x, y);
+  this.shape = document.createElement(this.type);
+  this.shape.className = 'shape';
+  this.shape.style.top = y+'px';
+  this.shape.style.left = x+'px';
+  this.shape.x = x;
+  this.shape.y = y;
+  this.shape.width = 0;
+  this.shape.height = 0;
+  this.startx = x;
+  this.starty = y;
+  this.started = true;
+  board.appendChild(this.shape);
+}
+
+CreateControl.prototype.drag = function(x,y){
+    if (this.started) {
+        var x1 = Math.min(this.startx, x);
+        var y1 = Math.min(this.starty, y);
+        var width = Math.max(this.startx, x) - x1;
+        var height = Math.max(this.starty, y) - y1;
+        this.shape.x = x1;
+        this.shape.y = y1;
+        this.shape.width = width;
+        this.shape.height = height;
+        this.shape.style.left = x1 + "px";
+        this.shape.style.top = y1 + "px";
+        this.shape.style.width = width + "px";
+        this.shape.style.height = height + "px";
+        if (x > board.x || y > board.y || x < 0 || y < 0) // the pointer is moved outside the board
+        { // finish 
+            this.started = false;
+            hideGlassPane();
+        }
+    }
+}
+
+CreateControl.prototype.end = function(x,y){
+    if (this.started) { // finish 
+        if (this.shape.width == 0)
+            this.shape.width = 10;
+        if (this.shape.height == 0)
+            this.shape.height = 10;        
+        this.shape.style.width = this.shape.width + "px";
+        this.shape.style.height = this.shape.height + "px";        
+        this.started = false;
+        setSelectMode();  
+    } 
+}
+
+Function 
+</script>
+
+</body>
+</html>
